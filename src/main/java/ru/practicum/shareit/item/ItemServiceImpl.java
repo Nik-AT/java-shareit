@@ -17,10 +17,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
-
-    private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
     @Autowired
+    private final UserRepository userRepository;
+    @Autowired
+    private final ItemRepository itemRepository;
+
     public ItemServiceImpl(UserRepository userRepository, ItemRepository itemRepository) {
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;

@@ -12,9 +12,9 @@ import java.util.List;
 @RequestMapping(path = "/users")
 @Slf4j
 public class UserController {
-
-    private final UserService userService;
     @Autowired
+    private final UserService userService;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }

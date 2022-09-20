@@ -12,9 +12,9 @@ import java.util.List;
 @RequestMapping("/items")
 @Slf4j
 public class ItemController {
-
-    private final ItemService itemService;
     @Autowired
+    private final ItemService itemService;
+
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
