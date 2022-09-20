@@ -2,8 +2,8 @@ package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
-import ru.practicum.shareit.user.exception.EmailException;
-import ru.practicum.shareit.user.exception.ValidationException;
+import ru.practicum.shareit.exception.EmailException;
+import ru.practicum.shareit.exception.ValidationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,7 +50,7 @@ public class UserRepositoryImpl implements UserRepository {
     private void validation(User user) {
         if (!StringUtils.hasText(user.getName())) throw new ValidationException("Нет имени");
         if (!StringUtils.hasText(user.getEmail())) throw new ValidationException("Нет email");
-        if (validationDuplicate(user)) throw new EmailException("Не корректный email");
+        if (validationDuplicate(user)) throw new EmailException("Пользователь с таким email уже существует");
     }
 
     private boolean validationDuplicate(User user) {

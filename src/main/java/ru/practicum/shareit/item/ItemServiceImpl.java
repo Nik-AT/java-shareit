@@ -2,13 +2,13 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.ItemNotFoundException;
+import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.exception.NotFoundException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
         }
         Item repoItem = itemRepository.get(userId, itemId);
         if (repoItem == null) {
-            throw new NotFoundException("Предмет не найден");
+            throw new ItemNotFoundException("Предмет не найден");
         }
         itemDto.setId(itemId);
         Item item = ItemMapper.matchItem(itemDto, repoItem);
