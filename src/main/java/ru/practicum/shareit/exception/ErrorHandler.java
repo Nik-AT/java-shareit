@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class ErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<?> handleEmailException(final EmailException e) {
+    public ResponseEntity<?> handleEmailException(final DuplicateEmailException e) {
         log.warn("409 {}", e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
@@ -28,9 +28,15 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleValException1(final UserNotFoundException e) {
+    public ResponseEntity<?> handleUserNotFoundException(final UserNotFoundException e) {
         log.warn("404 {}", e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleThrowable(final Throwable e) {
+        log.error("500 {}", e.getStackTrace(), e);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
 }
