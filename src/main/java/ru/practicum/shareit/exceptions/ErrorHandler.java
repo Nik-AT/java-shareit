@@ -1,4 +1,4 @@
-package ru.practicum.shareit.exception;
+package ru.practicum.shareit.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleNotFoundException(final ItemNotFoundException e) {
+    public ResponseEntity<?> handleNotFoundException(final NotFoundException e) {
         log.warn("404 {}", e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
@@ -28,15 +28,9 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleUserNotFoundException(final UserNotFoundException e) {
-        log.warn("404 {}", e.getMessage(), e);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler
     public ResponseEntity<?> handleThrowable(final Throwable e) {
         log.error("500 {}", e.getStackTrace(), e);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

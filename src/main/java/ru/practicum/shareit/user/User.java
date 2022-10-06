@@ -1,19 +1,37 @@
 package ru.practicum.shareit.user;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.Hibernate;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
+import javax.persistence.*;
+import java.util.Objects;
 
-@Data
-@Builder
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotBlank
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
-    @NotEmpty
-    @Email
+    @Column(name = "email", nullable = false, length = 100, unique = true)
     private String email;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        User user = (User) o;
+        return id != null && Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

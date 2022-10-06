@@ -1,27 +1,28 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.request.ItemRequest;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
-@Builder
+@AllArgsConstructor
 public class ItemDto {
-
     private Long id;
-
-    @NotBlank
     private String name;
-
-    @NotBlank
     private String description;
-
-    @NotNull
     private Boolean available;
+    private User owner;
+    private ItemRequest request;
+    private Booking lastBooking;
+    private Booking nextBooking;
+    private List<CommentDto> comments;
 
-    private Long owner;
-
-    private Long request;
+    @Data
+    public static class User {
+        private final Long id;
+        private final String name;
+    }
 }

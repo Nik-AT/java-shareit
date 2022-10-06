@@ -1,61 +1,84 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import ru.practicum.shareit.exceptions.DuplicateEmailException;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
     private final UserRepository userRepository;
 
+    @Autowired
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    @Override
     public UserDto create(UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
-        userRepository.save(user);
-        return UserMapper.toUserDto(user);
-    }
-
-    @Override
-    public UserDto update(Long userId, UserDto userDto) {
-        userDto.setId(userId);
-        User userByRep = userRepository.getUserById(userId);
-        if (userByRep == null) {
-            throw new UserNotFoundException("Пользователь не найден");
+        validation(userDto);
+        User user = new User(userDto.getId(),userDto.getName(), userDto.getEmail());
+        try {
+            return UserMapper.toDto(userRepository.save(user));
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateEmailException("Данный email уже используется");
         }
-        User user = UserMapper.matchUser(userDto, userByRep);
-        userRepository.save(user);
-        return UserMapper.toUserDto(user);
     }
 
-    @Override
-    public UserDto getUserDtoById(Long userId) {
-        User repoUser = userRepository.getUserById(userId);
-        if (repoUser == null) {
-            throw new UserNotFoundException("Пользователь не найден");
+
+    public UserDto update(UserDto userDto) {
+        Optional<User> repoUser = userRepository.findById(userDto.getId());
+        if (repoUser.isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
         }
-        return UserMapper.toUserDto(repoUser);
+        User user = repoUser.get();
+        if (userDto.getName() != null && !userDto.getName().isEmpty()) {
+            user.setName(userDto.getName());
+        }
+        if (userDto.getEmail() != null && !userDto.getEmail().isEmpty()) {
+            if (!userDto.getEmail().contains("@")) throw new ValidationException("Не корректный email!");
+            user.setEmail(userDto.getEmail());
+        }
+        try {
+            return UserMapper.toDto(userRepository.save(user));
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateEmailException("Данный email уже используется");
+        }
     }
 
-    @Override
-    public void delete(Long userId) {
-        userRepository.delete(userId);
+    public UserDto getById(Long id) {
+        Optional<User> repoUser = userRepository.findById(id);
+        if (repoUser.isPresent()) {
+            return UserMapper.toDto(repoUser.get());
+        }
+        throw new NotFoundException("Пользователь не найден");
     }
 
-    @Override
-    public List<UserDto> getAllUsersDto() {
-        List<User> users = userRepository.getAllUsers();
-        return users.stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
+    public List<UserDto> getAll() {
+        return userRepository.findAll().stream().map(UserMapper::toDto).collect(Collectors.toList());
+    }
+
+    public void delete(Long id) {
+        Optional<User> repoUser = userRepository.findById(id);
+        repoUser.ifPresent(userRepository::delete);
+    }
+
+    private void validation(UserDto userDto) {
+        if (userDto.getEmail() == null || userDto.getEmail().isEmpty()) {
+            throw new ValidationException("Не указан email");
+        }
+        if (!userDto.getEmail().contains("@")) {
+            throw new ValidationException("Не корректный email!");
+        }
+        if (userDto.getName() == null || userDto.getName().isEmpty()) {
+            throw new ValidationException("Не указано имя");
+        }
     }
 }
