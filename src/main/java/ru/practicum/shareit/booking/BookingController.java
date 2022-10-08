@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 
 import java.util.List;
@@ -52,6 +53,6 @@ public class BookingController {
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(value = "state", defaultValue = "ALL", required = false) String state) {
         log.info("Просмотр владельцем: {} его забронированных предметов", userId);
-        return bookingService.getAllByOwner(userId,state);
+        return bookingService.getAllByOwner(userId, state);
     }
 }

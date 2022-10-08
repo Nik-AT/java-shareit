@@ -13,6 +13,7 @@ import java.util.Objects;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,15 +25,15 @@ public class Item {
     @Column(name = "available", nullable = false)
     private boolean available;
     @Column(name = "owner_id", nullable = false)
-    private Long owner;
+    private Long ownerId;
     @Column(name = "request_id")
     private Long request;
 
-    public Item(String name, String description, boolean available, Long owner, Long request) {
+    public Item(String name, String description, boolean available, Long ownerId, Long request) {
         this.name = name;
         this.description = description;
         this.available = available;
-        this.owner = owner;
+        this.ownerId = ownerId;
         this.request = request;
     }
 

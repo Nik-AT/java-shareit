@@ -2,13 +2,21 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.model.States;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -21,16 +29,27 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
     private final UserService userService;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final ItemRepository itemRepository;
 
     @Autowired
-    public BookingServiceImpl(BookingRepository bookingRepository, ItemService itemService, UserService userService) {
+    public BookingServiceImpl(BookingRepository bookingRepository, ItemService itemService, UserService userService, UserRepository userRepository, UserMapper userMapper, ItemRepository itemRepository) {
         this.bookingRepository = bookingRepository;
         this.itemService = itemService;
         this.userService = userService;
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+        this.itemRepository = itemRepository;
     }
 
     public BookingDto create(BookingRequestDto bookingRequestDto, Long userId) {
-        userService.getById(userId);
+        Optional<User> repoUser = userRepository.findById(userId);
+        if (repoUser.isPresent()) {
+            userMapper.toDto(repoUser.get());
+        } else {
+            throw new NotFoundException("Пользователь не найден");
+        }
         ItemDto itemDto = itemService.getById(bookingRequestDto.getItemId(), null);
         if (itemDto.getOwner().getId().equals(userId)) {
             throw new NotFoundException("Не найден");
@@ -50,7 +69,7 @@ public class BookingServiceImpl implements BookingService {
                 bookingRequestDto.getEnd(),
                 itemDto.getId(), userId,
                 BookingStatus.WAITING);
-        return toDto(bookingRepository.save(booking));
+        return BookingMapper.toDto(bookingRepository.save(booking));
     }
 
     public BookingDto updateBooking(Long userId, Long bookingId, Boolean available) {
@@ -65,12 +84,13 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getStatus().equals(BookingStatus.APPROVED) && available) {
             throw new ValidationException("Статус уже одобрен");
         }
-        ItemDto itemDto = itemService.getById(booking.getItem(), null);
+        ItemDto itemDto = itemService.getById(booking.getItemId(), null);
         if (!itemDto.getOwner().getId().equals(userId)) {
             throw new ValidationException("Ошибка, вы не владелец");
         }
         booking.setStatus(available ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return toDto(bookingRepository.save(booking));
+
+        return setBooking(bookingRepository.save(booking));
     }
 
     public BookingDto getBooking(Long userId, Long bookingId) {
@@ -79,9 +99,9 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Бронирование не найдено");
         }
         Booking booking = repBooking.get();
-        ItemDto itemDto = itemService.getById(booking.getItem(), null);
+        ItemDto itemDto = itemService.getById(booking.getItemId(), null);
         if (userId.equals(booking.getBookerId()) || userId.equals(itemDto.getOwner().getId())) {
-            return toDto(booking);
+            return setBooking(booking);
         } else {
             throw new NotFoundException("Ошибка, вы должны быть владельцем");
         }
@@ -177,27 +197,23 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    private BookingDto setBooking(Booking booking) {
+        ItemDto itemDto = itemService.getById(booking.getItemId(), null);
+        UserDto userDto = userService.getById(booking.getBookerId());
+        BookingDto bookingDto = BookingMapper.toDto(booking);
+        bookingDto.setItem(new BookingDto.Item(itemDto.getId(), itemDto.getName(), itemDto.getDescription()));
+        bookingDto.setBooker(new BookingDto.User(userDto.getId(), userDto.getName()));
+        return bookingDto;
+    }
+
     private List<BookingDto> toCollectionDto(List<Booking> bookings) {
         if (bookings.isEmpty()) throw new NotFoundException("Бронирование не найдено");
         return bookings.stream()
-                .map(this::toDto)
+                .map(this::setBooking)
                 .sorted((booking1, booking2) -> {
                     if (booking1.getStart().isBefore(booking2.getStart())) return 1;
                     if (booking1.getStart().isAfter(booking2.getStart())) return -1;
                     return 0;
                 }).collect(Collectors.toList());
-    }
-
-    private BookingDto toDto(Booking b) {
-        ItemDto itemDto = itemService.getById(b.getItem(), null);
-        UserDto userDto = userService.getById(b.getBookerId());
-        return new BookingDto(
-                b.getId(),
-                b.getStart(),
-                b.getEnd(),
-                new BookingDto.Item(itemDto.getId(), itemDto.getName(), itemDto.getDescription()),
-                new BookingDto.User(userDto.getId(), userDto.getName()),
-                b.getStatus()
-        );
     }
 }

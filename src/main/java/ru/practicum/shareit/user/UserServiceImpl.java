@@ -15,23 +15,25 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private final UserRepository userRepository;
-
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    private final UserRepository userRepository;
+    @Autowired
+    private final UserMapper userMapper;
+
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     public UserDto create(UserDto userDto) {
         validation(userDto);
-        User user = new User(userDto.getId(),userDto.getName(), userDto.getEmail());
+        User user = userMapper.fromDto(userDto);
         try {
-            return UserMapper.toDto(userRepository.save(user));
+            return userMapper.toDto(userRepository.save(user));
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailException("Данный email уже используется");
         }
     }
-
 
     public UserDto update(UserDto userDto) {
         Optional<User> repoUser = userRepository.findById(userDto.getId());
@@ -47,7 +49,7 @@ public class UserServiceImpl implements UserService {
             user.setEmail(userDto.getEmail());
         }
         try {
-            return UserMapper.toDto(userRepository.save(user));
+            return userMapper.toDto(userRepository.save(user));
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailException("Данный email уже используется");
         }
@@ -56,18 +58,21 @@ public class UserServiceImpl implements UserService {
     public UserDto getById(Long id) {
         Optional<User> repoUser = userRepository.findById(id);
         if (repoUser.isPresent()) {
-            return UserMapper.toDto(repoUser.get());
+            return userMapper.toDto(repoUser.get());
         }
         throw new NotFoundException("Пользователь не найден");
     }
 
     public List<UserDto> getAll() {
-        return userRepository.findAll().stream().map(UserMapper::toDto).collect(Collectors.toList());
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public void delete(Long id) {
-        Optional<User> repoUser = userRepository.findById(id);
-        repoUser.ifPresent(userRepository::delete);
+        userRepository.findById(id)
+                .ifPresent(userRepository::delete);
     }
 
     private void validation(UserDto userDto) {

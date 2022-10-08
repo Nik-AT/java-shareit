@@ -2,17 +2,20 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.RequestRepository;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
@@ -30,12 +33,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
-                           UserService userService,
+                           UserRepository userRepository,
                            RequestRepository requestRepository,
                            BookingRepository bookingRepository,
                            CommentRepository commentRepository) {
         this.itemRepository = itemRepository;
-        this.userService = userService;
+        this.userRepository = userRepository;
         this.requestRepository = requestRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
@@ -43,14 +46,12 @@ public class ItemServiceImpl implements ItemService {
 
     public ItemDto create(ItemDto itemDto, Long userId) {
         validation(itemDto, userId);
-        UserDto owner = userService.getById(userId);
-        Item item = new Item(
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                owner.getId(),
-                itemDto.getRequest() != null ? itemDto.getRequest().getId() : null);
-        return toDto(itemRepository.save(item));
+        Optional<User> owner = userRepository.findById(userId);
+        Item item = ItemMapper.toItem(itemDto);
+        item.setOwnerId(owner.get().getId());
+        Long aLong = item.getRequest() != null ? itemDto.getRequest().getId() : null;
+        item.setRequest(aLong);
+        return ItemMapper.toDto(itemRepository.save(item));
     }
 
     public ItemDto updateItem(Long itemId, Long userId, ItemDto itemDto) {
@@ -60,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
         }
         Item itemToUpdate = repoItem.get();
         updateValidation(userId, itemDto, itemToUpdate);
-        return toDto(itemRepository.save(itemToUpdate));
+        return ItemMapper.toDto(itemRepository.save(itemToUpdate));
     }
 
     public ItemDto getById(Long itemId, Long userId) {
@@ -68,7 +69,7 @@ public class ItemServiceImpl implements ItemService {
         if (repoItem.isEmpty()) {
             throw new NotFoundException("Предмет не найден");
         }
-        ItemDto itemDto = toDto(repoItem.get());
+        ItemDto itemDto = setItem(repoItem.get());
         if (itemDto.getOwner().getId().equals(userId)) {
             return setBookings(itemDto);
         }
@@ -78,7 +79,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getAllUserItems(Long ownerId) {
         return itemRepository.searchAllByOwnerId(ownerId)
                 .stream()
-                .map(this::toDto)
+                .map(this::setItem)
                 .map(this::setBookings)
                 .collect(Collectors.toList());
     }
@@ -89,7 +90,7 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.searchByText(t)
                 .stream()
                 .filter(Item::isAvailable)
-                .map(this::toDto)
+                .map(this::setItem)
                 .collect(Collectors.toList());
     }
 
@@ -113,37 +114,11 @@ public class ItemServiceImpl implements ItemService {
                     itemId,
                     userId,
                     now));
-            return commentToDto(comment);
+            return setComment(comment);
         }
         throw new ValidationException("Не верный комментарий");
     }
 
-    private ItemDto toDto(Item itm) {
-        ItemRequest itemRequest = null;
-        if (itm.getRequest() != null) {
-            Optional<ItemRequest> repoRequest = requestRepository.findById(itm.getRequest());
-            if (repoRequest.isPresent()) {
-                itemRequest = repoRequest.get();
-            } else {
-                throw new NotFoundException("Запрос не найден");
-            }
-
-        }
-        UserDto userDto = userService.getById(itm.getOwner());
-        List<Comment> comments = commentRepository.findAllByItemId(itm.getId());
-        return new ItemDto(
-                itm.getId(),
-                itm.getName(),
-                itm.getDescription(),
-                itm.isAvailable(),
-                new ItemDto.User(userDto.getId(), userDto.getName()),
-                itemRequest,
-                null,
-                null,
-                comments.size() == 0 ? List.of() : comments.stream()
-                        .map(this::commentToDto)
-                        .collect(Collectors.toList()));
-    }
 
     private ItemDto setBookings(ItemDto itemDto) {
         List<Booking> allItems = bookingRepository.findAllByItemId(itemDto.getId());
@@ -165,6 +140,33 @@ public class ItemServiceImpl implements ItemService {
         return itemDto;
     }
 
+    private ItemDto setItem(Item itm) {
+        ItemRequest itemRequest = null;
+        if (itm.getRequest() != null) {
+            Optional<ItemRequest> repoRequest = requestRepository.findById(itm.getRequest());
+            if (repoRequest.isPresent()) {
+                itemRequest = repoRequest.get();
+            } else {
+                throw new NotFoundException("Запрос не найден");
+            }
+        }
+        Optional<User> userDto = userRepository.findById(itm.getOwnerId());
+        List<Comment> comments = commentRepository.findAllByItemId(itm.getId());
+        ItemDto itemDto = ItemMapper.toDto(itm);
+        itemDto.setComments(comments.size() == 0 ? List.of() : comments.stream()
+                .map(this::setComment)
+                .collect(Collectors.toList()));
+        itemDto.setOwner(new ItemDto.User(userDto.get().getId(), userDto.get().getName()));
+        return itemDto;
+    }
+
+    private CommentDto setComment(Comment comment) {
+        User userDto = userRepository.getUserById(comment.getAuthorId());
+        CommentDto commentDto = CommentMapper.toDto(comment);
+        commentDto.setAuthorName(userDto.getName());
+        return commentDto;
+    }
+
     private boolean validateItemBooking(List<Booking> bookings, Long userId, LocalDateTime now) {
         boolean valid = false;
         for (Booking b : bookings) {
@@ -173,17 +175,6 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         return valid;
-    }
-
-    private CommentDto commentToDto(Comment comment) {
-        UserDto userDto = userService.getById(comment.getAuthor());
-        return new CommentDto(
-                comment.getId(),
-                comment.getText(),
-                comment.getItem(),
-                comment.getAuthor(),
-                userDto.getName(),
-                comment.getCreated());
     }
 
     private void validation(ItemDto itemDto, Long userId) {
@@ -202,7 +193,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void updateValidation(Long userId, ItemDto itemDto, Item itemToUpdate) {
-        if (!itemToUpdate.getOwner().equals(userId)) {
+        if (!itemToUpdate.getOwnerId().equals(userId)) {
             throw new NotFoundException("Вы не владелец");
         }
 

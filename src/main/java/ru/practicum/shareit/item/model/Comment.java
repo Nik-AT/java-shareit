@@ -1,9 +1,6 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
@@ -15,6 +12,8 @@ import java.util.Objects;
 @Setter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "COMMENTS")
 public class Comment {
     @Id
@@ -23,14 +22,12 @@ public class Comment {
     @Column(name = "COMMENT_TEXT", nullable = false)
     private String text;
     @Column(name = "ITEM_ID", nullable = false)
-    private Long item;
+    private Long itemId;
     @Column(name = "AUTHOR_ID", nullable = false)
-    private Long author;
+    private Long authorId;
     @Column(name = "CREATED", nullable = false)
     private LocalDateTime created;
 
-    public Comment() {
-    }
 
     @Override
     public boolean equals(Object o) {
