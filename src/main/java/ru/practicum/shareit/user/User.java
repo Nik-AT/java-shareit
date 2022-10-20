@@ -1,37 +1,34 @@
 package ru.practicum.shareit.user;
 
-import lombok.*;
-import org.hibernate.Hibernate;
+import lombok.Data;
 
 import javax.persistence.*;
-import java.util.Objects;
 
+@Data
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@ToString
-@RequiredArgsConstructor
-@AllArgsConstructor
 public class User {
+
     @Id
+    @Column(name = "user_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "name", nullable = false, length = 50)
+    @Column(name = "user_name", nullable = false)
     private String name;
-    @Column(name = "email", nullable = false, length = 100, unique = true)
+    @Column(length = 100, unique = true)
     private String email;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        User user = (User) o;
-        return id != null && Objects.equals(id, user.id);
+    public User(String name, String email) {
+        this.name = name;
+        this.email = email;
     }
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    public User() {
+    }
+
+    public User(Long id, String name, String email) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
     }
 }

@@ -7,17 +7,20 @@ import ru.practicum.shareit.booking.model.Booking;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    @Query(value = "select * from BOOKING where BOOKER_ID = ?1", nativeQuery = true)
-    List<Booking> findAllByBookerId(Long bookerId);
+    List<Booking> findByItemId(Long itemId);
 
-    @Query(value = "select * from BOOKING where BOOKER_ID = ?1 and STATUS = ?2", nativeQuery = true)
-    List<Booking> findAllByBookerIdAndStatus(Long bookerId, String status);
+    @Query("select b from Booking as b " +
+            "where b.booker.id = ?1 " +
+            "order by b.start desc")
+    List<Booking> findBookingsByBooker(Long booker);
 
-    @Query(value = "select b.ID, b.START_DATE, b.END_DATE, b.ITEM_ID, b.BOOKER_ID,b.STATUS from BOOKING as b " +
-            "JOIN ITEMS I on b.ITEM_ID = I.ID where OWNER_ID = ?1",
-            nativeQuery = true)
-    List<Booking> findAllByOwner(Long userId);
+    @Query("select b from Booking as b " +
+            "where b.item.owner.id = ?1 " +
+            "order by b.start desc")
+    List<Booking> findBookingsByOwner(Long booker);
 
-    @Query(value = "select * from BOOKING where ITEM_ID = ?1 order by START_DATE", nativeQuery = true)
-    List<Booking> findAllByItemId(Long itemId);
+    @Query("select b from Booking as b " +
+            "where b.item.id = ?1 and b.booker.id = ?2 " +
+            "order by b.start desc")
+    List<Booking> findBookingsByBookerIdAndItemId(Long itemId, Long userId);
 }

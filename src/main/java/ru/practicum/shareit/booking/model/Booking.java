@@ -1,54 +1,45 @@
 package ru.practicum.shareit.booking.model;
 
-import lombok.*;
-import org.hibernate.Hibernate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
-@Entity
 @Getter
 @Setter
-@Builder
-@ToString
-@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "booking")
+@NoArgsConstructor
+@Entity
+@Table(name = "bookings")
 public class Booking {
+
     @Id
+    @Column(name = "booking_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "start_date", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "booker_id")
+    private User booker;
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
+    @Column(name = "booking_start", nullable = false)
     private LocalDateTime start;
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "booking_end", nullable = false)
     private LocalDateTime end;
-    @Column(name = "item_id", nullable = false)
-    private Long itemId;
-    @Column(name = "booker_id", nullable = false)
-    private Long bookerId;
-    @Enumerated(EnumType.STRING)
-    private BookingStatus status;
+    @Column(nullable = false)
+    private States states;
 
-
-    public Booking(LocalDateTime start, LocalDateTime end, Long itemId, Long booker, BookingStatus status) {
+    public Booking(User booker, Item item, LocalDateTime start, LocalDateTime end) {
+        this.booker = booker;
+        this.item = item;
         this.start = start;
         this.end = end;
-        this.itemId = itemId;
-        this.bookerId = booker;
-        this.status = status;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Booking booking = (Booking) o;
-        return id != null && Objects.equals(id, booking.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }

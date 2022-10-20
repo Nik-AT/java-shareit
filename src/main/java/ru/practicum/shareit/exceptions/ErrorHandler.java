@@ -16,21 +16,20 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleNotFoundException(final NotFoundException e) {
+    public ResponseEntity<?> handleNotFoundException(final ValidationException e) {
         log.warn("404 {}", e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleValException(final ValidationException e) {
+    public ResponseEntity<?> handleValException(final NotFoundException e) {
         log.warn("400 {}", e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<?> handleThrowable(final Throwable e) {
-        log.error("500 {}", e.getStackTrace(), e);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<?> handleNotFoundException(final DataNotFound e) {
+        log.warn("404 {}", e.getMessage(), e);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
-
 }

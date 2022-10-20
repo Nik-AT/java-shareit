@@ -1,52 +1,48 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.*;
-import org.hibernate.Hibernate;
+import lombok.Data;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
-import java.util.Objects;
+import java.util.List;
 
+@Data
 @Entity
 @Table(name = "items")
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class Item {
     @Id
+    @Column(name = "item_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "name", nullable = false)
+    Long id;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+    @Column(name = "item_name", nullable = false)
     private String name;
-    @Column(name = "description", nullable = false)
+    @Column(length = 1024)
     private String description;
-    @Column(name = "available", nullable = false)
-    private boolean available;
-    @Column(name = "owner_id", nullable = false)
-    private Long ownerId;
-    @Column(name = "request_id")
-    private Long request;
+    @Column(nullable = false)
+    private Boolean available;
+    @OneToMany
+    @JoinColumn(name = "item_id")
+    private List<Comment> comments;
 
-    public Item(String name, String description, boolean available, Long ownerId, Long request) {
+
+    public Item(Long id, User owner, String name, String description, Boolean available) {
+        this.id = id;
+        this.owner = owner;
         this.name = name;
         this.description = description;
         this.available = available;
-        this.ownerId = ownerId;
-        this.request = request;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Item item = (Item) o;
-        return id != null && Objects.equals(id, item.id);
+    public Item() {
     }
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    public Item(User owner, String name, String description, Boolean available) {
+        this.owner = owner;
+        this.name = name;
+        this.description = description;
+        this.available = available;
     }
 }

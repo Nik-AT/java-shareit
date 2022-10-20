@@ -1,44 +1,38 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.*;
-import org.hibernate.Hibernate;
+import lombok.Data;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
+@Data
 @Entity
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Table(name = "COMMENTS")
+@Table(name = "comments")
 public class Comment {
+
     @Id
+    @Column(name = "comment_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "COMMENT_TEXT", nullable = false)
-    private String text;
-    @Column(name = "ITEM_ID", nullable = false)
-    private Long itemId;
-    @Column(name = "AUTHOR_ID", nullable = false)
-    private Long authorId;
-    @Column(name = "CREATED", nullable = false)
-    private LocalDateTime created;
+    Long id;
+    @Column(name = "comment_text", nullable = false)
+    String text;
+    @Column(name = "item_id", nullable = false)
+    Long itemId;
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    User author;
+    @Column(name = "created", nullable = false)
+    LocalDateTime created;
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Comment comment = (Comment) o;
-        return id != null && Objects.equals(id, comment.id);
+    public Comment(String text, Long itemId, User author, LocalDateTime created) {
+        this.text = text;
+        this.itemId = itemId;
+        this.author = author;
+        this.created = created;
     }
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    public Comment() {
+
     }
 }
