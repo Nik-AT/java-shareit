@@ -1,27 +1,28 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.exceptions.Create;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 @Data
-@Builder
 public class ItemDto {
 
+    @Positive(groups = {Create.class})
     private Long id;
-
-    @NotBlank
+    @NotBlank(groups = {Create.class})
     private String name;
-
-    @NotBlank
+    @NotBlank(groups = {Create.class})
     private String description;
-
-    @NotNull
+    @NotNull(groups = {Create.class})
     private Boolean available;
 
-    private Long owner;
-
-    private Long request;
+    public ItemDto(Long id, String name, String description, Boolean available) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.available = available;
+    }
 }

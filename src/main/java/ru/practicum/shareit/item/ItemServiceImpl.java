@@ -2,107 +2,124 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.ItemNotFoundException;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.State;
+import ru.practicum.shareit.exceptions.DataNotFound;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.InfoCommentDto;
+import ru.practicum.shareit.item.dto.InfoItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
-    @Autowired
-    private final UserRepository userRepository;
-    @Autowired
+
+
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
+    private final ItemMapper mapper;
+    private final CommentMapper commentMapper;
 
-    public ItemServiceImpl(UserRepository userRepository, ItemRepository itemRepository) {
-        this.userRepository = userRepository;
+    @Autowired
+    public ItemServiceImpl(ItemRepository itemRepository, ItemMapper mapper, UserRepository userRepository,
+                           BookingRepository bookingRepository, CommentRepository commentRepository,
+                           CommentMapper commentMapper) {
         this.itemRepository = itemRepository;
+        this.mapper = mapper;
+        this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
+        this.commentMapper = commentMapper;
     }
 
-    @Override
-    public ItemDto create(Long userId, ItemDto itemDto) {
-        User owner = userRepository.getUserById(userId);
-        if (owner == null) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
-        Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(owner);
-        itemRepository.save(userId, item);
-        return ItemMapper.toItemDto(item);
+    public InfoItemDto createItem(ItemDto itemDto, Long ownerId) {
+        userValidation(ownerId);
+        return mapper.toInfoItemDto(itemRepository.save(mapper.toItem(itemDto, ownerId)));
     }
 
-    @Override
-    public ItemDto update(Long userId, Long itemId, ItemDto itemDto) {
-        User owner = userRepository.getUserById(userId);
-        if (owner == null) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
-        Item repoItem = itemRepository.get(userId, itemId);
-        if (repoItem == null) {
-            throw new ItemNotFoundException("Предмет не найден");
+    public InfoItemDto updateItem(ItemDto itemDto, Long ownerId, Long itemId) {
+        if (ownerId == null) {
+            throw new NotFoundException("Не верный запрос, отсутствует ИД владельца");
         }
         itemDto.setId(itemId);
-        Item item = ItemMapper.matchItem(itemDto, repoItem);
-        item.setOwner(owner);
-        itemRepository.save(userId, item);
-        item = itemRepository.get(userId, itemId);
-        return ItemMapper.toItemDto(item);
+        Item item = itemValidation(itemDto.getId());
+        userValidation(ownerId);
+        return mapper.toInfoItemDto(itemRepository.save(updateItemFromRepository(itemDto, ownerId, item)));
     }
 
-    @Override
-    public ItemDto get(Long userId, Long itemId) {
-        final User user = userRepository.getUserById(userId);
-        if (user == null) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
-        Item repoItem = itemRepository.find(itemId);
-        User owner = repoItem.getOwner();
-        ItemDto itemDto = ItemMapper.toItemDto(repoItem);
-        itemDto.setOwner(owner.getId());
-        return itemDto;
+    public List<InfoItemDto> getAllItemsByOwnerId(Long ownerId) {
+        userValidation(ownerId);
+        return itemRepository.findByOwnerId(ownerId).stream().map(mapper::toInfoItemDto).collect(Collectors.toList());
     }
 
-    @Override
-    public List<ItemDto> getAllItem(Long userId) {
-        final User owner = userRepository.getUserById(userId);
-        if (owner == null) {
-            throw new UserNotFoundException("Пользователь не найден");
+    public InfoItemDto getItemById(Long itemId, Long userId) {
+        userValidation(userId);
+        Item item = itemValidation(itemId);
+        InfoItemDto infoItemDto;
+        if (item.getOwner().getId().equals((userId))) {
+            infoItemDto = mapper.toInfoItemDto(item);
+        } else {
+            infoItemDto = mapper.toInfoItemDtoNotOwner(item);
         }
-        List<Item> repoItems = itemRepository.get(userId);
-        if (repoItems.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return repoItems.stream()
-                .map(ItemMapper::toItemDto)
-                .peek(itemDto -> itemDto.setOwner(owner.getId()))
-                .collect(Collectors.toList());
+        return infoItemDto;
     }
 
-    @Override
-    public List<ItemDto> search(Long userId, String text) {
-        final User repoUser = userRepository.getUserById(userId);
-        if (repoUser == null) {
-            throw new UserNotFoundException("Пользователь не найден");
-        }
-        if (text.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<Item> searchItems = itemRepository.search(text);
-        List<ItemDto> searchItemDto = new ArrayList<>();
-        for (Item item : searchItems) {
-            ItemDto itemDto = ItemMapper.toItemDto(item);
-            itemDto.setOwner(item.getOwner().getId());
-            searchItemDto.add(itemDto);
-        }
-        return searchItemDto.isEmpty() ? Collections.emptyList() : searchItemDto;
+    public List<InfoItemDto> searchItems(String text) {
+        return itemRepository.findByNameContainsOrDescriptionContainsIgnoreCase(text, text)
+                .stream().filter((i) -> i.getAvailable()).map(mapper::toInfoItemDto).collect(Collectors.toList());
     }
 
+    public InfoCommentDto createComment(Long itemId, Long userId, CommentDto commentDto) {
+        if (commentDto.getText() == null || commentDto.getText().equals("")) {
+            throw new NotFoundException("Пустой коммент");
+        }
+        itemValidation(itemId);
+        userValidation(userId);
+        List<Booking> bookingList = bookingRepository.findBookingsByBookerIdAndItemId(itemId, userId);
+        bookingList.removeIf((b) -> b.getState().equals(State.REJECTED));
+        bookingList.removeIf((b) -> b.getEnd().isAfter(LocalDateTime.now()));
+        if (bookingList.size() == 0) {
+            throw new NotFoundException("Ошибка, коммент может оставить пользователь который брал предмет в аренду");
+        }
+        return CommentMapper.toInfoCommentDto(commentRepository.save(commentMapper.toComment(itemId, userId, commentDto)));
+    }
+
+    private Item updateItemFromRepository(ItemDto itemDto, Long ownerId, Item item) {
+        if (!item.getOwner().getId().equals(ownerId)) {
+            throw new ValidationException("Не верно указан собственник");
+        }
+        if (itemDto.getName() != null) {
+            item.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
+        return item;
+    }
+
+    private void userValidation(Long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new DataNotFound(
+                "Пользователь не найден"));
+    }
+
+    private Item itemValidation(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(() -> new DataNotFound(
+                "Предмет не найдена"));
+    }
 }
+
