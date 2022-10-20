@@ -29,9 +29,9 @@ public class ItemController {
     @PostMapping
     public InfoItemDto create(@Validated({Create.class})
                               @RequestBody ItemDto itemDto,
-                              @RequestHeader(name = "X-Sharer-User-Id") Long userId) {
-        log.info("Запрос на добавление предмета от пользователя: {}", userId);
-        return itemService.createItem(itemDto, userId);
+                              @RequestHeader(name = "X-Sharer-User-Id") Long ownerId) {
+        log.info("Запрос на добавление предмета от пользователя: {}", ownerId);
+        return itemService.createItem(itemDto, ownerId);
     }
 
     @PatchMapping("/{itemId}")

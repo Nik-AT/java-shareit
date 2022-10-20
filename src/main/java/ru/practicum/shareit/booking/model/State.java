@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking.model;
 
-public enum States {
+public enum State {
     APPROVED,
     REJECTED,
     CURRENT,

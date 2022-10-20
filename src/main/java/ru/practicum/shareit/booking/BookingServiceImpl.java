@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.InfoBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.States;
+import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.exceptions.DataNotFound;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
@@ -37,23 +37,23 @@ public class BookingServiceImpl implements BookingService {
     public InfoBookingDto create(BookingDto bookingDto, Long bookerId) {
         bookingValidation(bookingDto, bookerId);
         Booking booking = mapper.toBooking(bookingDto, bookerId);
-        booking.setStates(States.WAITING);
+        booking.setState(State.WAITING);
         return BookingMapper.toInfoBookingDto(bookingRepository.save(booking));
     }
 
     public InfoBookingDto updateBooking(Long bookingId, Boolean approved, Long ownerId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new DataNotFound(
                 "Бронь не обнаружена"));
-        if (booking.getStates().equals(States.APPROVED)) {
+        if (booking.getState().equals(State.APPROVED)) {
             throw new NotFoundException("Изменение статуса невозможно");
         }
         if (!ownerId.equals(booking.getItem().getOwner().getId())) {
             throw new ValidationException("Подтвердить запрос может только владелей вещи");
         }
         if (approved) {
-            booking.setStates(States.APPROVED);
+            booking.setState(State.APPROVED);
         } else {
-            booking.setStates(States.REJECTED);
+            booking.setState(State.REJECTED);
         }
         return BookingMapper.toInfoBookingDto(bookingRepository.save(booking));
     }
@@ -61,7 +61,7 @@ public class BookingServiceImpl implements BookingService {
     public List<InfoBookingDto> getAllByUser(Long userId, String state) {
         userValidation(userId);
         try {
-            States.valueOf(state.toUpperCase());
+            State.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(String.format("{\"error\": \"Unknown state: %s\" }", state));
         }
@@ -82,7 +82,7 @@ public class BookingServiceImpl implements BookingService {
     public List<InfoBookingDto> getAllByOwner(Long userId, String state) {
         userValidation(userId);
         try {
-            States.valueOf(state.toUpperCase());
+            State.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(String.format("{\"error\": \"Unknown state: %s\" }", state));
         }
@@ -116,19 +116,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<Booking> setBookingStatus(List<Booking> bookings, String state) {
-        if (States.valueOf(state.toUpperCase()).equals(States.WAITING)) {
-            return bookings.stream().filter((b) -> b.getStates().equals(States.WAITING))
+        if (State.valueOf(state.toUpperCase()).equals(State.WAITING)) {
+            return bookings.stream().filter((b) -> b.getState().equals(State.WAITING))
                     .collect(Collectors.toList());
-        } else if (States.valueOf(state.toUpperCase()).equals(States.REJECTED)) {
-            return bookings.stream().filter((b) -> b.getStates().equals(States.REJECTED))
+        } else if (State.valueOf(state.toUpperCase()).equals(State.REJECTED)) {
+            return bookings.stream().filter((b) -> b.getState().equals(State.REJECTED))
                     .collect(Collectors.toList());
-        } else if (States.valueOf(state.toUpperCase()).equals(States.FUTURE)) {
+        } else if (State.valueOf(state.toUpperCase()).equals(State.FUTURE)) {
             return bookings.stream().filter((b) -> LocalDateTime.now().isBefore(b.getStart()))
                     .collect(Collectors.toList());
-        } else if (States.valueOf(state.toUpperCase()).equals(States.PAST)) {
+        } else if (State.valueOf(state.toUpperCase()).equals(State.PAST)) {
             return bookings.stream().filter((b) -> LocalDateTime.now().isAfter(b.getEnd()))
                     .collect(Collectors.toList());
-        } else if (States.valueOf(state.toUpperCase()).equals(States.CURRENT)) {
+        } else if (State.valueOf(state.toUpperCase()).equals(State.CURRENT)) {
             return bookings.stream().filter((b) -> LocalDateTime.now().isAfter(b.getStart())
                     && LocalDateTime.now().isBefore(b.getEnd())).collect(Collectors.toList());
         }

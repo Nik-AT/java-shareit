@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.shareit.booking.model.States;
+import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.exceptions.Create;
 
 import javax.validation.constraints.NotNull;
@@ -23,6 +23,6 @@ public class BookingDto {
     private LocalDateTime start;
     @NotNull(groups = {Create.class})
     private LocalDateTime end;
-    private States states;
+    private State state;
 
 }

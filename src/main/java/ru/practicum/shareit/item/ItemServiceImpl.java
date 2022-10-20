@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.States;
+import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.exceptions.DataNotFound;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
@@ -88,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
         itemValidation(itemId);
         userValidation(userId);
         List<Booking> bookingList = bookingRepository.findBookingsByBookerIdAndItemId(itemId, userId);
-        bookingList.removeIf((b) -> b.getStates().equals(States.REJECTED));
+        bookingList.removeIf((b) -> b.getState().equals(State.REJECTED));
         bookingList.removeIf((b) -> b.getEnd().isAfter(LocalDateTime.now()));
         if (bookingList.size() == 0) {
             throw new NotFoundException("Ошибка, коммент может оставить пользователь который брал предмет в аренду");

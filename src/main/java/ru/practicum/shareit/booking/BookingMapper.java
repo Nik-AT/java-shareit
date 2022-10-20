@@ -36,6 +36,6 @@ public class BookingMapper {
                 booking.getItem(),
                 booking.getStart(),
                 booking.getEnd(),
-                booking.getStates());
+                booking.getState());
     }
 }

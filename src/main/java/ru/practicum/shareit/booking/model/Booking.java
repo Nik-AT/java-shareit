@@ -33,7 +33,7 @@ public class Booking {
     @Column(name = "booking_end", nullable = false)
     private LocalDateTime end;
     @Column(nullable = false)
-    private States states;
+    private State state;
 
     public Booking(User booker, Item item, LocalDateTime start, LocalDateTime end) {
         this.booker = booker;
