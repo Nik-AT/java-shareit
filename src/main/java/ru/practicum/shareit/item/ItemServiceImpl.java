@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
@@ -49,19 +50,24 @@ public class ItemServiceImpl implements ItemService {
         return mapper.toInfoItemDto(itemRepository.save(mapper.toItem(itemDto, ownerId)));
     }
 
-    public InfoItemDto updateItem(ItemDto itemDto, Long ownerId, Long itemId) {
-        if (ownerId == null) {
-            throw new NotFoundException("Не верный запрос, отсутствует ИД владельца");
-        }
-        itemDto.setId(itemId);
+    public InfoItemDto updateItem(ItemDto itemDto, Long ownerId) {
+
+//TODO
         Item item = itemValidation(itemDto.getId());
+        updateItemFromRepository( itemDto, ownerId, item);
+        if (!item.getOwner().getId().equals(ownerId)) {
+            throw new ValidationException("Некорректно указан собственник вещи");
+        }
         userValidation(ownerId);
-        return mapper.toInfoItemDto(itemRepository.save(updateItemFromRepository(itemDto, ownerId, item)));
+        return mapper.toInfoItemDto(itemRepository.save(item));
     }
 
-    public List<InfoItemDto> getAllItemsByOwnerId(Long ownerId) {
+    public List<InfoItemDto> getAllItemsByOwnerId(Long ownerId, PageRequest pageRequest) {
         userValidation(ownerId);
-        return itemRepository.findByOwnerId(ownerId).stream().map(mapper::toInfoItemDto).collect(Collectors.toList());
+        return itemRepository.findByOwnerId(ownerId, pageRequest)
+                .stream()
+                .map(mapper::toInfoItemDto)
+                .collect(Collectors.toList());
     }
 
     public InfoItemDto getItemById(Long itemId, Long userId) {
@@ -76,9 +82,9 @@ public class ItemServiceImpl implements ItemService {
         return infoItemDto;
     }
 
-    public List<InfoItemDto> searchItems(String text) {
-        return itemRepository.findByNameContainsOrDescriptionContainsIgnoreCase(text, text)
-                .stream().filter((i) -> i.getAvailable()).map(mapper::toInfoItemDto).collect(Collectors.toList());
+    public List<InfoItemDto> searchItems(String text, PageRequest pageRequest) {
+        return itemRepository.findByNameContainsOrDescriptionContainsIgnoreCase(text, text, pageRequest)
+                .stream().filter(Item::getAvailable).map(mapper::toInfoItemDto).collect(Collectors.toList());
     }
 
     public InfoCommentDto createComment(Long itemId, Long userId, CommentDto commentDto) {
@@ -108,6 +114,9 @@ public class ItemServiceImpl implements ItemService {
         }
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
+        }
+        if (itemDto.getRequestId() != null) {
+            item.setRequestId(itemDto.getRequestId());
         }
         return item;
     }

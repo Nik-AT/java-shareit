@@ -2,11 +2,16 @@ package ru.practicum.shareit.booking;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.InfoBookingDto;
+import ru.practicum.shareit.exceptions.NotFoundException;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -42,18 +47,28 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<InfoBookingDto> getAllByUser(
-            @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL", required = false) String state) {
-        log.info("Запрос на просмотр бронирований пользователя: {}", userId);
-        return bookingService.getAllByUser(userId, state);
+    public List<InfoBookingDto> getAllByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                    @RequestParam(defaultValue = "ALL") String state,
+                                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                                    int from,
+                                                    @Positive @RequestParam(name = "size", defaultValue = "10")
+                                                    int size) {
+        if (from<0) throw new NotFoundException("Отрицательное");
+        int page = from / size;
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
+        return bookingService.getAllByUser(userId, state, pageRequest);
     }
 
     @GetMapping("/owner")
-    public List<InfoBookingDto> getAllByOwner(
-            @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(value = "state", defaultValue = "ALL", required = false) String state) {
-        log.info("Просмотр владельцем: {} его забронированных предметов", userId);
-        return bookingService.getAllByOwner(userId, state);
+    public List<InfoBookingDto> getAllByOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                     @RequestParam(defaultValue = "ALL") String state,
+                                                      @RequestParam(name = "from", defaultValue = "0")
+                                                     int from,
+                                                     @Positive @RequestParam(name = "size", defaultValue = "10")
+                                                     int size) {
+        if (from<0) throw new NotFoundException("Отрицательное");
+        int page = from / size;
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
+        return bookingService.getAllByOwner(userId, state, pageRequest);
     }
 }

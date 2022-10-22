@@ -1,44 +1,44 @@
 package ru.practicum.shareit.request;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.Hibernate;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+
+
+import lombok.Data;
+import ru.practicum.shareit.item.model.Item;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.List;
+
 
 @Entity
+@Data
 @Table(name = "requests")
-@Getter
-@Setter
-@ToString
-@RequiredArgsConstructor
 public class ItemRequest {
-    @Id
-    private Long id;
-    @Column(name = "description", nullable = false)
-    private String description;
-    @Column(name = "requestor_id", nullable = false)
-    private Long requestor;
-    @Column(name = "creation_date")
-    private LocalDateTime created;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        ItemRequest that = (ItemRequest) o;
-        return id != null && Objects.equals(id, that.id);
+    @Id
+    @Column(name = "request_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long requestId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+    @Column(nullable = false)
+    private String description;
+    @Column(name = "creation_time", nullable = false)
+    private LocalDateTime creationTime;
+    @OneToMany
+    @JoinColumn(name = "request_id")
+    private List<Item> items;
+
+    public ItemRequest() {
+
     }
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    public ItemRequest(Long userId, String description, LocalDateTime creationTime) {
+        this.userId = userId;
+        this.description = description;
+        this.creationTime = creationTime;
     }
 }

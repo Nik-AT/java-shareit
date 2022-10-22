@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.InfoBookingDto;
@@ -11,6 +12,7 @@ import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -35,8 +37,22 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public InfoBookingDto create(BookingDto bookingDto, Long bookerId) {
-        bookingValidation(bookingDto, bookerId);
-        Booking booking = mapper.toBooking(bookingDto, bookerId);
+        Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new DataNotFound(
+                String.format("Вещь с id %d в базе данных не обнаружен", bookingDto.getItemId())));
+        if (!item.getAvailable()) {
+            throw new NotFoundException("Бронирование данной вещи невозможно, статус вещи 'занята'");
+        }
+        LocalDateTime timeNow = LocalDateTime.now();
+        if (bookingDto.getStart().isBefore(timeNow)
+                || bookingDto.getEnd().isBefore(bookingDto.getStart())) {
+            throw new NotFoundException("Некорректно указаны сроки бронирования");
+        }
+        if (item.getOwner().getId().equals(bookerId)) {
+            throw new ValidationException("Владелец не может бранировать свою вещь");
+        }
+        User booker = userRepository.findById(bookerId).orElseThrow(() -> new DataNotFound(
+                String.format("Пользователь с id %d в базе данных не обнаружен", bookerId)));
+        Booking booking = mapper.toBooking(bookingDto, item, booker);
         booking.setState(State.WAITING);
         return BookingMapper.toInfoBookingDto(bookingRepository.save(booking));
     }
@@ -58,14 +74,14 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toInfoBookingDto(bookingRepository.save(booking));
     }
 
-    public List<InfoBookingDto> getAllByUser(Long userId, String state) {
+    public List<InfoBookingDto> getAllByUser(Long userId, String state, PageRequest pageRequest) {
         userValidation(userId);
         try {
             State.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(String.format("{\"error\": \"Unknown state: %s\" }", state));
         }
-        return setBookingStatus(bookingRepository.findBookingsByBooker(userId), state).stream()
+        return setBookingStatus(bookingRepository.findBookingsByBookerId(userId, pageRequest), state).stream()
                 .map(BookingMapper::toInfoBookingDto).collect(Collectors.toList());
     }
 
@@ -79,14 +95,14 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toInfoBookingDto(booking);
     }
 
-    public List<InfoBookingDto> getAllByOwner(Long userId, String state) {
+    public List<InfoBookingDto> getAllByOwner(Long userId, String state, PageRequest pageRequest) {
         userValidation(userId);
         try {
             State.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(String.format("{\"error\": \"Unknown state: %s\" }", state));
         }
-        return setBookingStatus(bookingRepository.findBookingsByOwner(userId), state).stream()
+        return setBookingStatus(bookingRepository.findBookingsByItemOwnerId(userId, pageRequest), state).stream()
                 .map(BookingMapper::toInfoBookingDto).collect(Collectors.toList());
     }
 
@@ -127,10 +143,12 @@ public class BookingServiceImpl implements BookingService {
                     .collect(Collectors.toList());
         } else if (State.valueOf(state.toUpperCase()).equals(State.PAST)) {
             return bookings.stream().filter((b) -> LocalDateTime.now().isAfter(b.getEnd()))
+                    .filter((b) -> b.getState().equals(State.APPROVED))
                     .collect(Collectors.toList());
         } else if (State.valueOf(state.toUpperCase()).equals(State.CURRENT)) {
             return bookings.stream().filter((b) -> LocalDateTime.now().isAfter(b.getStart())
-                    && LocalDateTime.now().isBefore(b.getEnd())).collect(Collectors.toList());
+                            && LocalDateTime.now().isBefore(b.getEnd()))
+                    .collect(Collectors.toList());
         }
         return bookings;
     }

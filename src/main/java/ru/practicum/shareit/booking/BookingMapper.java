@@ -13,20 +13,7 @@ import ru.practicum.shareit.user.UserRepository;
 
 @Component
 public class BookingMapper {
-    private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
-
-    @Autowired
-    public BookingMapper(ItemRepository itemRepository, UserRepository userRepository) {
-        this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
-    }
-
-    public Booking toBooking(BookingDto bookingDto, Long bookerId) {
-        Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new DataNotFound(
-                "Предмет не обнаружен"));
-        User booker = userRepository.findById(bookerId).orElseThrow(() -> new DataNotFound(
-                "Позльзователь не найден"));
+    public Booking toBooking(BookingDto bookingDto, Item item, User booker) {
         return new Booking(booker, item, bookingDto.getStart(), bookingDto.getEnd());
     }
 

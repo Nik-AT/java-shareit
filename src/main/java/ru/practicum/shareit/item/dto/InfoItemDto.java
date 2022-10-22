@@ -18,8 +18,10 @@ public class InfoItemDto {
     private BookingDto lastBooking;
     private BookingDto nextBooking;
     private List<InfoCommentDto> comments;
+    private Long requestId;
 
-    public InfoItemDto(Long id, User owner, String name, String description, Boolean available, List<InfoCommentDto> comments) {
+    public InfoItemDto(Long id, User owner, String name, String description,
+                       Boolean available, List<InfoCommentDto> comments) {
         this.id = id;
         this.owner = owner;
         this.name = name;
@@ -40,6 +42,9 @@ public class InfoItemDto {
             this.bookerId = bookerId;
             this.start = start;
             this.end = end;
+        }
+
+        public BookingDto() {
         }
     }
 
