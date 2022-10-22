@@ -48,12 +48,12 @@ public class BookingController {
 
     @GetMapping
     public List<InfoBookingDto> getAllByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                    @RequestParam(defaultValue = "ALL") String state,
-                                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
-                                                    int from,
-                                                    @Positive @RequestParam(name = "size", defaultValue = "10")
-                                                    int size) {
-        if (from<0) throw new NotFoundException("Отрицательное");
+                                             @RequestParam(defaultValue = "ALL") String state,
+                                             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                             int from,
+                                             @Positive @RequestParam(name = "size", defaultValue = "10")
+                                             int size) {
+        if (from < 0) throw new NotFoundException("Отрицательное");
         int page = from / size;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
         return bookingService.getAllByUser(userId, state, pageRequest);
@@ -61,12 +61,12 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<InfoBookingDto> getAllByOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                     @RequestParam(defaultValue = "ALL") String state,
-                                                      @RequestParam(name = "from", defaultValue = "0")
-                                                     int from,
-                                                     @Positive @RequestParam(name = "size", defaultValue = "10")
-                                                     int size) {
-        if (from<0) throw new NotFoundException("Отрицательное");
+                                              @RequestParam(defaultValue = "ALL") String state,
+                                              @RequestParam(name = "from", defaultValue = "0")
+                                              int from,
+                                              @Positive @RequestParam(name = "size", defaultValue = "10")
+                                              int size) {
+        if (from < 0) throw new NotFoundException("Отрицательное");
         int page = from / size;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
         return bookingService.getAllByOwner(userId, state, pageRequest);

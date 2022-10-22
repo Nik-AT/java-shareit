@@ -23,6 +23,7 @@ public class UserDto {
         this.name = name;
         this.email = email;
     }
+
     public UserDto() {
     }
 }

@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exceptions.Create;
-import ru.practicum.shareit.exceptions.ErrorException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.InfoCommentDto;
@@ -64,7 +63,7 @@ public class ItemController {
                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
                                              int from,
                                              @Positive @RequestParam(name = "size", defaultValue = "10")
-                                                 int size) {
+                                             int size) {
         log.info("Все предметы пользователя: {}", userId);
         int page = from / size;
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -76,7 +75,7 @@ public class ItemController {
                                          @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
                                          int from,
                                          @Positive @RequestParam(name = "size", defaultValue = "10")
-                                             int size) {
+                                         int size) {
         log.info("Запрос на поиск предмета: {}", text);
         if (text.equals("")) {
             return new ArrayList<>();

@@ -1,15 +1,11 @@
 package ru.practicum.shareit.booking;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.InfoBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exceptions.DataNotFound;
-import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserRepository;
 
 @Component
 public class BookingMapper {

@@ -30,8 +30,6 @@ public class Item {
     private Long requestId;
 
 
-
-
     public Item(Long id, User owner, String name, String description, Boolean available) {
         this.id = id;
         this.owner = owner;

@@ -54,7 +54,7 @@ public class ItemServiceImpl implements ItemService {
 
 //TODO
         Item item = itemValidation(itemDto.getId());
-        updateItemFromRepository( itemDto, ownerId, item);
+        updateItemFromRepository(itemDto, ownerId, item);
         if (!item.getOwner().getId().equals(ownerId)) {
             throw new ValidationException("Некорректно указан собственник вещи");
         }

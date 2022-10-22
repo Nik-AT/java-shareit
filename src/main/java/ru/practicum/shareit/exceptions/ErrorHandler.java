@@ -32,6 +32,7 @@ public class ErrorHandler {
         log.warn("404 {}", e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler
     public ResponseEntity<?> handleThrowable(final ErrorException e) {
         log.warn("500 {}", e.getMessage(), e);
