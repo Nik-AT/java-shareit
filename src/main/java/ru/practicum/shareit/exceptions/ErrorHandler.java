@@ -9,11 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
-    @ExceptionHandler
-    public ResponseEntity<?> handleDuplicateEmailException(final DuplicateEmailException e) {
-        log.warn("409 {}", e.getMessage(), e);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-    }
+
 
     @ExceptionHandler
     public ResponseEntity<?> handleValidationException(final ValidationException e) {
@@ -33,9 +29,4 @@ public class ErrorHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler
-    public ResponseEntity<?> handleThrowable(final ErrorException e) {
-        log.warn("500 {}", e.getMessage(), e);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 }
