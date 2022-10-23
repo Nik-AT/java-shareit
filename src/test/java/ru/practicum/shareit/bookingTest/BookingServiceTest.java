@@ -111,7 +111,7 @@ class BookingServiceTest {
         User booker = TestObj.getUser1();
         Booking booking = TestObj.futureBooking();
         when(mapper.toBooking(bookingDto, item, booker))
-                        .thenReturn(booking);
+                .thenReturn(booking);
         when(bookingRepository.save(booking))
                 .thenReturn(booking);
 

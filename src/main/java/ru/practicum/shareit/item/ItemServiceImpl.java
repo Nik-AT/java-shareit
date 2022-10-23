@@ -51,8 +51,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public InfoItemDto updateItem(ItemDto itemDto, Long ownerId) {
-
-//TODO
         Item item = itemValidation(itemDto.getId());
         updateItemFromRepository(itemDto, ownerId, item);
         if (!item.getOwner().getId().equals(ownerId)) {

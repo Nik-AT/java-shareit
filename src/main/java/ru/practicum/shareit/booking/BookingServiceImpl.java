@@ -106,26 +106,6 @@ public class BookingServiceImpl implements BookingService {
                 .map(BookingMapper::toInfoBookingDto).collect(Collectors.toList());
     }
 
-
-    private void bookingValidation(BookingDto bookingDto, Long bookerId) {
-        Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new DataNotFound(
-                "Предмет не найден"));
-        if (!item.getAvailable()) {
-            throw new NotFoundException("Бронирование предмета не возможна");
-        }
-        LocalDateTime timeNow = LocalDateTime.now();
-        if (bookingDto.getStart().isBefore(timeNow)
-                || bookingDto.getEnd().isBefore(timeNow)
-                || bookingDto.getEnd().isBefore(bookingDto.getStart())) {
-            throw new NotFoundException("Не найдено");
-        }
-        userRepository.findById(bookerId).orElseThrow(() -> new DataNotFound(
-                "Полльзователь не найден"));
-        if (item.getOwner().getId().equals(bookerId)) {
-            throw new ValidationException("Отказано в доступе к предмету");
-        }
-    }
-
     private void userValidation(Long userId) {
         userRepository.findById(userId).orElseThrow(() -> new DataNotFound(
                 "Пользователь не найден"));

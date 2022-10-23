@@ -138,34 +138,34 @@ class ItemServiceTest {
                 TestObj.infoCommentDto());
     }
 
-        void userValidation() {
-            when(userRepository.findById(anyLong()))
-                    .thenAnswer(invocationOnMock -> {
-                        Long userId = invocationOnMock.getArgument(0, Long.class);
-                        if (userId == 777L) {
-                            throw new DataNotFound(
-                                    String.format("Пользователь с id %d в базе данных не обнаружен", 777));
-                        } else {
-                            return Optional.of(user1);
-                        }
-                    });
-            DataNotFound exception = Assertions.assertThrows(
-                    DataNotFound.class,
-                    () -> itemService.createItem(itemDto1, userError.getId()));
-            Assertions.assertEquals("Пользователь с id 777 в базе данных не обнаружен",
-                    exception.getMessage());
-        }
-
-        void itemValidation() {
-         when(itemRepository.findById(anyLong()))
-                 .thenAnswer(invocationOnMock -> {
-                     Long id = invocationOnMock.getArgument(0, Long.class);
-                     if (id == 777) {
-                         throw new DataNotFound(
-                                 String.format("Вещи с id %d в базе данных не обнаружен", 777));
-                     } else {
-                         return Optional.of(item1);
-                     }
-                 });
-        }
+    void userValidation() {
+        when(userRepository.findById(anyLong()))
+                .thenAnswer(invocationOnMock -> {
+                    Long userId = invocationOnMock.getArgument(0, Long.class);
+                    if (userId == 777L) {
+                        throw new DataNotFound(
+                                String.format("Пользователь с id %d в базе данных не обнаружен", 777));
+                    } else {
+                        return Optional.of(user1);
+                    }
+                });
+        DataNotFound exception = Assertions.assertThrows(
+                DataNotFound.class,
+                () -> itemService.createItem(itemDto1, userError.getId()));
+        Assertions.assertEquals("Пользователь с id 777 в базе данных не обнаружен",
+                exception.getMessage());
     }
+
+    void itemValidation() {
+        when(itemRepository.findById(anyLong()))
+                .thenAnswer(invocationOnMock -> {
+                    Long id = invocationOnMock.getArgument(0, Long.class);
+                    if (id == 777) {
+                        throw new DataNotFound(
+                                String.format("Вещи с id %d в базе данных не обнаружен", 777));
+                    } else {
+                        return Optional.of(item1);
+                    }
+                });
+    }
+}

@@ -38,7 +38,7 @@ class ItemMapperTest {
     void toInfoItemDto() {
         Item item = TestObj.getItem3();
         List<Booking> bookingList = new ArrayList<>(Arrays.asList(TestObj.futureBooking(),
-                                                                    TestObj.pastBooking()));
+                TestObj.pastBooking()));
         InfoItemDto infoItemDto = new InfoItemDto(item.getId(),
                 item.getOwner(),
                 item.getName(),

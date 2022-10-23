@@ -161,13 +161,13 @@ class BookingControllerTest {
                 .andExpect(content().json(mapper.writeValueAsString(bookings)));
 //todo
         mvc.perform(get("/bookings/owner")
-                .header("X-Sharer-User-Id", "1")
-                .param("state", "ALL")
-                .param("from", "-1")
-                .param("size", "1")
-                .characterEncoding(StandardCharsets.UTF_8)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                        .header("X-Sharer-User-Id", "1")
+                        .param("state", "ALL")
+                        .param("from", "-1")
+                        .param("size", "1")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(get("/bookings/owner")

@@ -78,7 +78,7 @@ public class BookingRepositoryTests {
     @Test
     void findBookingsByBookerIdAndItemIdTest() {
         Assertions.assertEquals(bookingRepository.findBookingsByBookerIdAndItemId(
-                booking1.getItem().getId(), user1.getId()),
+                        booking1.getItem().getId(), user1.getId()),
                 new ArrayList<>(List.of(booking1)));
     }
 }

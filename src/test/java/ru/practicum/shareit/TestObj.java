@@ -56,7 +56,7 @@ public class TestObj {
     }
 
     public static InfoItemDto getInfoItemDto1() {
-        InfoItemDto infoItemDto =  new InfoItemDto(1L, getUser1(), "кувалда", "кувалда с деревянной ручкой",
+        InfoItemDto infoItemDto = new InfoItemDto(1L, getUser1(), "кувалда", "кувалда с деревянной ручкой",
                 true, new ArrayList<>());
         infoItemDto.setRequestId(1L);
         return infoItemDto;
@@ -80,6 +80,12 @@ public class TestObj {
         LocalDateTime start = LocalDateTime.of(2023, 10, 1, 12, 0);
         LocalDateTime end = LocalDateTime.of(2023, 10, 2, 12, 0);
         return new Booking(1L, getUser1(), getItem3(), start, end, State.WAITING);
+    }
+
+    public static Booking fBooking() {
+        LocalDateTime start = LocalDateTime.of(2023, 10, 1, 12, 0);
+        LocalDateTime end = LocalDateTime.of(2023, 10, 2, 12, 0);
+        return new Booking(getUser1(), getItem3(), start, end);
     }
 
     public static Booking pastBooking() {

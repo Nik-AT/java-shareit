@@ -43,7 +43,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateUser() {
+    void update() {
         when(userRepository.save(UserMapper.toUser(userDto)))
                 .thenReturn(user);
         Assertions.assertEquals(userDto, userService.create(userDto));
