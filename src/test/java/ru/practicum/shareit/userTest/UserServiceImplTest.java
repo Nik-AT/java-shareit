@@ -23,11 +23,11 @@ import static org.mockito.Mockito.when;
 
 class UserServiceImplTest {
 
-    UserServiceImpl userService;
-    UserRepository userRepository;
-    User user = TestObj.getUser1();
-    UserDto userDto = TestObj.getUserDto1();
-    UserDto userDtoError = TestObj.getUserDtoError();
+    private UserServiceImpl userService;
+    private UserRepository userRepository;
+    private User user = TestObj.getUser1();
+    private UserDto userDto = TestObj.getUserDto1();
+    private UserDto userDtoError = TestObj.getUserDtoError();
 
     @BeforeEach
     void beforeEach() {

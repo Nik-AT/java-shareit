@@ -10,8 +10,8 @@ import ru.practicum.shareit.booking.model.Booking;
 
 @SpringBootTest
 public class BookingMapperTest {
-    Booking booking;
-    InfoBookingDto infoBookingDto;
+    private Booking booking;
+    private InfoBookingDto infoBookingDto;
 
     @BeforeEach
     void beforeEach() {

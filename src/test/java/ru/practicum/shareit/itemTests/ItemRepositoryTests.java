@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @DataJpaTest
 public class ItemRepositoryTests {
-    UserRepository userRepository;
-    ItemRepository itemRepository;
-    User user1;
-    User user2;
-    Item item1;
-    Item item2;
-    Item item3;
+    private UserRepository userRepository;
+    private ItemRepository itemRepository;
+    private User user1;
+    private User user2;
+    private Item item1;
+    private Item item2;
+    private Item item3;
 
     @Autowired
     public ItemRepositoryTests(UserRepository userRepository, ItemRepository itemRepository) {

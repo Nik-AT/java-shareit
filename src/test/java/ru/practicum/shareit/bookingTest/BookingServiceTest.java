@@ -35,11 +35,11 @@ import static org.mockito.Mockito.when;
 @Slf4j
 class BookingServiceTest {
 
-    BookingRepository bookingRepository;
-    ItemRepository itemRepository;
-    UserRepository userRepository;
-    BookingMapper mapper;
-    BookingServiceImpl bookingService;
+    private BookingRepository bookingRepository;
+    private ItemRepository itemRepository;
+    private UserRepository userRepository;
+    private BookingMapper mapper;
+    private BookingServiceImpl bookingService;
 
     @BeforeEach
     void beforeEach() {

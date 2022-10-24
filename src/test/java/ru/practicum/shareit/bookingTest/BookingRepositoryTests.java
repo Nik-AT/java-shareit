@@ -21,9 +21,19 @@ import java.util.List;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BookingRepositoryTests {
 
-    UserRepository userRepository;
-    ItemRepository itemRepository;
-    BookingRepository bookingRepository;
+    private UserRepository userRepository;
+    private ItemRepository itemRepository;
+    private BookingRepository bookingRepository;
+    private User user1;
+    private Item item1;
+    private User user2;
+    private Item item2;
+    private Item item3;
+    private Booking booking1;
+    private Booking booking2;
+    private static final LocalDateTime START = LocalDateTime.of(2023, 10, 1, 12, 0);
+    private static final LocalDateTime END = LocalDateTime.of(2023, 10, 2, 12, 0);
+
 
     @Autowired
     public BookingRepositoryTests(UserRepository userRepository,
@@ -33,16 +43,6 @@ public class BookingRepositoryTests {
         this.itemRepository = itemRepository;
         this.bookingRepository = bookingRepository;
     }
-
-    User user1;
-    Item item1;
-    User user2;
-    Item item2;
-    Item item3;
-    Booking booking1;
-    Booking booking2;
-    static final LocalDateTime START = LocalDateTime.of(2023, 10, 1, 12, 0);
-    static final LocalDateTime END = LocalDateTime.of(2023, 10, 2, 12, 0);
 
     @BeforeEach
     void beforeEach() {

@@ -33,24 +33,24 @@ import static org.mockito.Mockito.when;
 
 class ItemServiceTest {
 
-    ItemRepository itemRepository;
-    UserRepository userRepository;
-    BookingRepository bookingRepository;
-    CommentRepository commentRepository;
-    ItemMapper mapper;
-    CommentMapper commentMapper;
-    ItemServiceImpl itemService;
+    private ItemRepository itemRepository;
+    private UserRepository userRepository;
+    private BookingRepository bookingRepository;
+    private CommentRepository commentRepository;
+    private ItemMapper mapper;
+    private CommentMapper commentMapper;
+    private ItemServiceImpl itemService;
 
-    User user1 = TestObj.getUser1();
-    UserDto userError = TestObj.getUserDtoError();
-    ItemDto itemDto1 = TestObj.getItemDto1();
-    Item item1 = TestObj.getItem1();
-    InfoItemDto infoItemDto1 = TestObj.getInfoItemDto1();
-    InfoItemDto infoItemDtoToOwner = TestObj.itemDtoToOwner();
-    Booking futureBooking = TestObj.futureBooking();
-    Booking pastBooking = TestObj.pastBooking();
-    Booking rejectedBooking = TestObj.rejectedBooking();
-    CommentDto commentDto = TestObj.commentDto();
+    private User user1 = TestObj.getUser1();
+    private UserDto userError = TestObj.getUserDtoError();
+    private ItemDto itemDto1 = TestObj.getItemDto1();
+    private Item item1 = TestObj.getItem1();
+    private InfoItemDto infoItemDto1 = TestObj.getInfoItemDto1();
+    private InfoItemDto infoItemDtoToOwner = TestObj.itemDtoToOwner();
+    private Booking futureBooking = TestObj.futureBooking();
+    private Booking pastBooking = TestObj.pastBooking();
+    private Booking rejectedBooking = TestObj.rejectedBooking();
+    private CommentDto commentDto = TestObj.commentDto();
 
 
     @BeforeEach
