@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(UserDto userDto, Long userId) {
         User userFromData = repository.findById(userId).orElseThrow(() -> new DataNotFound(
-               "Пользователь не найден"));
+                "Пользователь не найден"));
         return UserMapper.toUserDto(repository.save(validationUser(
                 UserMapper.toUser(userId, userDto), userFromData)));
     }

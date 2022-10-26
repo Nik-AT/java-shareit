@@ -2,15 +2,19 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exceptions.Create;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.InfoCommentDto;
 import ru.practicum.shareit.item.dto.InfoItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +44,11 @@ public class ItemController {
             @RequestHeader(name = "X-Sharer-User-Id", required = false) Long ownerId,
             @RequestBody @Valid ItemDto itemDto) {
         log.info("Запрос на обновление предмета: {} , пользователя: {}", itemId, ownerId);
-        return itemService.updateItem(itemDto, ownerId, itemId);
+        if (ownerId == null) {
+            throw new NotFoundException("Не верный запрос, отсутствует ИД владельца");
+        }
+        itemDto.setId(itemId);
+        return itemService.updateItem(itemDto, ownerId);
     }
 
     @GetMapping("/{itemId}")
@@ -51,18 +59,30 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<InfoItemDto> getAllUserItems(@RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+    public List<InfoItemDto> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                             int from,
+                                             @Positive @RequestParam(name = "size", defaultValue = "10")
+                                             int size) {
         log.info("Все предметы пользователя: {}", userId);
-        return itemService.getAllItemsByOwnerId(userId);
+        int page = from / size;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return itemService.getAllItemsByOwnerId(userId, pageRequest);
     }
 
     @GetMapping("/search")
-    public List<InfoItemDto> searchItems(@RequestParam(name = "text", defaultValue = "") String text) {
+    public List<InfoItemDto> searchItems(@RequestParam String text,
+                                         @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                         int from,
+                                         @Positive @RequestParam(name = "size", defaultValue = "10")
+                                         int size) {
         log.info("Запрос на поиск предмета: {}", text);
         if (text.equals("")) {
             return new ArrayList<>();
         }
-        return itemService.searchItems(text);
+        int page = from / size;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return itemService.searchItems(text, pageRequest);
     }
 
     @PostMapping("/{itemId}/comment")

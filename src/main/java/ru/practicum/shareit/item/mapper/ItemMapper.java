@@ -32,7 +32,20 @@ public class ItemMapper {
     }
 
     public InfoItemDto toInfoItemDto(Item item) {
-        InfoItemDto infoItemDto = getInfoItemDto(item);
+        if (item.getComments() == null) {
+            item.setComments(new ArrayList<>());
+        }
+        List<InfoCommentDto> commentsList = item.getComments().stream().map(CommentMapper::toInfoCommentDto)
+                .collect(Collectors.toList());
+        InfoItemDto infoItemDto = new InfoItemDto(item.getId(),
+                item.getOwner(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                commentsList);
+        if (item.getRequestId() != null) {
+            infoItemDto.setRequestId(item.getRequestId());
+        }
         List<Booking> bookingList = bookingRepository.findByItemId(infoItemDto.getId());
         infoItemDto.setLastBooking(InfoItemDto.toBookingDto(findLastBooking(bookingList)));
         infoItemDto.setNextBooking(InfoItemDto.toBookingDto(findNextBooking(bookingList)));
@@ -40,7 +53,20 @@ public class ItemMapper {
     }
 
     public InfoItemDto toInfoItemDtoNotOwner(Item item) {
-        InfoItemDto infoItemDto = getInfoItemDto(item);
+        if (item.getComments() == null) {
+            item.setComments(new ArrayList<>());
+        }
+        List<InfoCommentDto> commentsList = item.getComments().stream().map(CommentMapper::toInfoCommentDto)
+                .collect(Collectors.toList());
+        InfoItemDto infoItemDto = new InfoItemDto(item.getId(),
+                item.getOwner(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                commentsList);
+        if (item.getRequestId() != null) {
+            infoItemDto.setRequestId(item.getRequestId());
+        }
         infoItemDto.setLastBooking(null);
         infoItemDto.setNextBooking(null);
         return infoItemDto;
@@ -64,7 +90,7 @@ public class ItemMapper {
     public Item toItem(ItemDto itemDto, Long ownerId) {
         User user = userRepository.findById(ownerId).orElseThrow(() -> new DataNotFound(
                 "Пользователь не найден"));
-        return new Item(user, itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable());
+        return new Item(user, itemDto.getName(), itemDto.getDescription(), itemDto.getAvailable(), itemDto.getRequestId());
     }
 
     private Booking findNextBooking(List<Booking> bookingList) {

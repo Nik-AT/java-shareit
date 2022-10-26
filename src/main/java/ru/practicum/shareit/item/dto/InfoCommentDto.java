@@ -14,4 +14,5 @@ public class InfoCommentDto {
     private Long itemId;
     private String authorName;
     private LocalDateTime created;
+
 }
