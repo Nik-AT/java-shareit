@@ -24,7 +24,6 @@ public class UserIT {
     private final EntityManager em;
     private final UserService userService;
 
-
     @Test
     void getUserById() {
         User user = TestObj.getUser1();

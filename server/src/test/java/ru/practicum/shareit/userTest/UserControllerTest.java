@@ -32,49 +32,6 @@ class UserControllerTest {
     @Autowired
     MockMvc mvc;
 
-    // TODO: 31-Oct-22  
-
-//    @Test
-//    void createUser() throws Exception {
-//        UserDto userDto = TestObj.getUserDto1();
-//        when(userService.create(any())).thenReturn(userDto);
-//
-//        mvc.perform(post("/users")
-//                        .content(mapper.writeValueAsString(userDto))
-//                        .characterEncoding(StandardCharsets.UTF_8)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
-//                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class));
-//
-//        userDto.setId(-1L);
-//        mvc.perform(post("/users")
-//                        .content(mapper.writeValueAsString(userDto))
-//                        .characterEncoding(StandardCharsets.UTF_8)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//
-//        userDto.setId(1L);
-//        userDto.setName("");
-//        mvc.perform(post("/users")
-//                        .content(mapper.writeValueAsString(userDto))
-//                        .characterEncoding(StandardCharsets.UTF_8)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//
-//        userDto.setName("user1");
-//        userDto.setEmail("user1mail.ru");
-//        mvc.perform(post("/users")
-//                        .content(mapper.writeValueAsString(userDto))
-//                        .characterEncoding(StandardCharsets.UTF_8)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest());
-//    }
-
     @Test
     void updateUser() throws Exception {
         UserDto userDto = TestObj.getUserDto1();
