@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exceptions.Create;
@@ -31,7 +32,7 @@ public class ItemController {
     public InfoItemDto create(@Validated({Create.class})
                               @RequestBody ItemDto itemDto,
                               @RequestHeader(name = "X-Sharer-User-Id") Long ownerId) {
-        log.info("Запрос на добавление предмета от пользователя: {}", ownerId);
+        log.info("Запрос на добавление предмета от пользователя: {}, {}", ownerId, itemDto);
         return itemService.createItem(itemDto, ownerId);
     }
 
@@ -63,7 +64,7 @@ public class ItemController {
                                              int size) {
         log.info("Все предметы пользователя: {}", userId);
         int page = from / size;
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("id").ascending());
         return itemService.getAllItemsByOwnerId(userId, pageRequest);
     }
 
